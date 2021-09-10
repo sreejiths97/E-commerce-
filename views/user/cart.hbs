@@ -1,0 +1,114 @@
+<section>
+    <div class="container">
+        <table class="table mt-5">
+            <thead>
+                <tr>
+                    <th scope="col">Item</th>
+                    <th scope="col">Title</th>
+                     <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                
+
+                </tr>
+            </thead>
+            <tbody>
+                {{#each products}}
+                <tr>
+                   
+                    <td><img style="width: 70px; height:70px;" src="/product_images/{{this.product._id}}.jpg" alt=""></td>
+                    <td>{{this.product.Name}}</td>    
+                    <td>Rs.{{this.product.Price}}</td>  
+                   
+                    <td>
+                        <button class="btn btn-primary mr-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}','{{../user._id}}',-1)">-</button>
+                        <span id="{{this.product._id}}">{{this.quantity}}</span>
+                        <button class="btn btn-primary ml-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}','{{../user._id}}',1)">+</button>
+                    </td>    
+                    <td>
+                      <button class="btn btn-danger" onclick="removeProduct('{{this._id}}','{{this.product._id}}')">Remove</button> 
+                    </td>       
+                </tr>
+                {{/each}}
+            </tbody>
+
+        </table>
+        <hr>
+        <div class="float-right pr-5">
+             <h4 class="float-right mr-5 ">Totel: Rs.<span id="totel" >{{totalValue}}</span></h4><br>
+        <a href="/place-order" class=" mr-3 btn btn-success" style="width: 100%;"><b> Place Order</b></a>
+
+        </div>
+       
+    </div>
+   
+</section>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+    function changeQuantity(cartId,proId,userId,count){
+        let quantity=parseInt(document.getElementById(proId).innerHTML)
+        
+        $.ajax({
+            url:'/change-product-quantiy',
+            data:{
+                cart:cartId,
+                product:proId,
+                user:userId,
+                count:count,
+                quantity:quantity,
+            },
+            
+            method:'post',
+            success:(response)=>{
+                if(response.removeProduct){
+                    alert("product Removed from cart")
+                    location.reload()
+                }else{
+                    document.getElementById(proId).innerHTML=quantity+count
+                     document.getElementById('totel').innerHTML=response.totel
+                }
+            
+            }
+            
+        })
+
+    }
+    function removeProduct(cartId,proId){
+                
+            swal({
+  title: "Are you sure?",
+  text: "Once deleted, you will not be able to recover this file!",
+  icon: "warning",
+  buttons: true,
+  dangerMode: true,
+})
+.then((willDelete) => {
+  if (willDelete) {
+       $.ajax({
+            url:'/remove-product',
+            type:'DELETE',
+            data:{
+                cart:cartId,
+                product:proId,
+               
+            },
+            
+            method:'post',
+            success:(response)=>{
+                if(response.removeProductcart){
+                     swal("Poof! Your  file has been deleted!", {
+      icon: "success",
+    });
+                    location.reload()
+                }
+            
+            }
+            
+        })
+   
+  } else {
+    swal("Your  file is safe!");
+  }
+});
+
+}
+</script>
